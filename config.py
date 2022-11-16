@@ -12,7 +12,7 @@ class WordIndex(IntEnum):
 
 
 # 句子的最大长度
-SEQ_MAX_LENGTH = 12
+SEQ_MAX_LENGTH = 30
 # 隐藏层大小
 hidden_size = 256
 

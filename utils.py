@@ -101,8 +101,7 @@ def filter_pair(p):
     :return:
     """
     return len(p[0].split(' ')) < SEQ_MAX_LENGTH and \
-           len(p[1].split(' ')) < SEQ_MAX_LENGTH and \
-           p[1].startswith(eng_prefixes)
+           len(p[1].split(' ')) < SEQ_MAX_LENGTH
 
 
 def filter_pairs(pairs):
