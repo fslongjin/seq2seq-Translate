@@ -1,6 +1,13 @@
 import re
+import time
+import math
 import unicodedata
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import numpy as np
 from config import WordIndex, SEQ_MAX_LENGTH
+
+plt.switch_backend('agg')
 
 
 class Lang:
@@ -105,3 +112,37 @@ def filter_pairs(pairs):
     :return:
     """
     return [pair for pair in pairs if filter_pair(pair)]
+
+
+def as_minutes(s):
+    """
+    将秒转换为 "分 秒" 的形式
+    :param s: 秒数
+    :return:
+    """
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)
+
+
+def time_since(since, percent):
+    """
+    在给定当前时间和进度百分比的情况下返回 经过的时间和估计的剩余时间
+    :param since: 开始时间
+    :param percent: 完成的百分比
+    :return: '经过的时间 (- 剩余时间)'
+    """
+    now = time.time()
+    s = now - since
+    es = s / percent
+    rs = es - s
+    return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
+
+
+def show_plot(points):
+    plt.figure()
+    fig, ax = plt.subplots()
+    # this locator puts ticks at regular intervals
+    loc = ticker.MultipleLocator(base=0.2)
+    ax.yaxis.set_major_locator(loc)
+    plt.plot(points)
