@@ -1,3 +1,4 @@
+import os.path
 import re
 import time
 import math
@@ -8,6 +9,7 @@ import numpy as np
 from config import WordIndex, SEQ_MAX_LENGTH
 import torch
 import config
+
 plt.switch_backend('agg')
 
 
@@ -61,7 +63,7 @@ def normalize_string(s):
         s = list(s)
         s = ' '.join(s)
     s = unicode_to_ascii(s)
-    s = re.sub(r"([.!?])", r" \1", s)
+    s = re.sub(r"([.。!！?？])", "", s)
     return s
 
 
@@ -136,7 +138,7 @@ def time_since(since, percent):
     s = now - since
     es = s / percent
     rs = es - s
-    return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
+    return '已用时间：%s (剩余 %s)' % (as_minutes(s), as_minutes(rs))
 
 
 def show_plot(points):
@@ -146,7 +148,7 @@ def show_plot(points):
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
-    plt.savefig("train_result.png")
+    plt.savefig(os.path.join(config.result_path, "train_result.png"))
 
 
 def indexes_from_sentence(lang, sentence):
