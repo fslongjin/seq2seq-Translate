@@ -1,10 +1,9 @@
 import torch
 from matplotlib import pyplot as plt, ticker
-
+from multiprocessing.dummy import Pool as ThreadPool
 import config
 import os
 from model import EncoderRNN, AttnDecoderRNN
-
 from utils import tensor_from_sentence, Lang, prepare_data, normalize_string
 
 import threading
@@ -154,12 +153,60 @@ def evaluate_and_show_attention(sentences: list):
             encoder, decoder, input_lang, target_lang, pairs = get_model()
             decoded_words, attentions = do_evaluate(encoder, decoder, input_lang, target_lang, sentence)
 
-            show_attention(os.path.join(config.result_path, raw_str)+".png", sentence, decoded_words, attentions)
+            show_attention(os.path.join(config.result_path, raw_str) + ".png", sentence, decoded_words, attentions)
 
         except Exception as e:
             print("Err occurred, raw_str={}, msg={}".format(raw_str, e))
 
 
+def evaluate_on_dataset():
+    """
+    计算在训练集上的bleu分数
+    :return:
+    """
+    from nltk.translate.bleu_score import sentence_bleu
+    from tqdm import tqdm
+    from queue import Queue
+    encoder, decoder, input_lang, target_lang, pairs = get_model()
+
+    total_bleu_score = 0.0
+    print("正在为{}条语句计算BLEU分数...".format(len(pairs)))
+    with tqdm(total=len(pairs)) as pbar:
+
+        if config.device.type == 'cpu':
+
+            def worker(p):
+                try:
+                    _decoded_words, _attentions = do_evaluate(encoder, decoder, input_lang, target_lang, p[0])
+                    q.put(sentence_bleu([p[1]], _decoded_words))
+                except Exception as e:
+                    print("在评估{}时发生错误".format(p))
+
+                pbar.update(1)
+
+            q = Queue()
+            pool = ThreadPool(4)
+            pool.map(worker, pairs)
+            pool.close()
+
+            while not q.empty():
+                total_bleu_score += q.get()
+
+        else:
+            for pair in pairs:
+                try:
+                    decoded_words, attentions = do_evaluate(encoder, decoder, input_lang, target_lang, pair[0])
+                    # print("sentence_bleu([pair[1]], decoded_words)={}".format(sentence_bleu([pair[1]], decoded_words)))
+                    total_bleu_score += sentence_bleu([pair[1]], decoded_words)
+                except Exception as e:
+                    print("在评估{}时发生错误".format(pair))
+
+                pbar.update(1)
+
+    print("已评估{}条语句，平均bleu score:".format(len(pairs)), total_bleu_score / len(pairs))
+
+
 if __name__ == '__main__':
-    data = ['我们非常需要事物', '他总是忘记事情']
-    evaluate_and_show_attention(data)
+    data = ['我们非常需要食物', '他总是忘记事情']
+    # evaluate_and_show_attention(data)
+    evaluate_on_dataset()
