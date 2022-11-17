@@ -11,8 +11,29 @@ from utils import read_langs, filter_pairs, tensors_from_pair, prepare_data
 from model import EncoderRNN, AttnDecoderRNN
 
 
+def check_if_use_teacher_forcing(current_iter, total_iters):
+    """
+    检查是否启用teacher forcing
+    :param current_iter: 当前的迭代数
+    :param total_iters: 总共需要的迭代数
+    :return:
+    """
+    mode = config.teacher_forcing_mode
+    if mode.lower() == 'const':
+        threshold = config.teacher_forcing_threshold
+    elif mode.lower() == 'linear':
+        # 线性调整teacher forcing的阈值，使得在训练过程中，教师辅助逐渐变小，以提高模型的效果。
+        threshold = config.teacher_forcing_threshold + \
+                    (1-config.teacher_forcing_threshold)*(float(current_iter)/float(total_iters))
+    else:
+        print("Teaching forcing mode错误！")
+        raise Exception("Teaching forcing mode错误")
+
+    return True if random.random() > threshold else False
+
+
 def do_train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer,
-             criterion, max_length=config.SEQ_MAX_LENGTH):
+             criterion, max_length=config.SEQ_MAX_LENGTH, use_teacher_forcing=False):
     """
     训练一个epoch的函数
     :param input_tensor:
@@ -23,6 +44,7 @@ def do_train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, d
     :param decoder_optimizer:
     :param criterion:
     :param max_length: 句子的最大长度
+    :param use_teacher_forcing 是否启用 teacher forcing
     :return: 本轮训练的平均损失
     """
     # 初始化encoder的隐藏层参数
@@ -44,9 +66,6 @@ def do_train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, d
     decoder_input = torch.tensor([[int(config.WordIndex.SOS_token)]], device=config.device)
     # 将encoder的隐藏层参数作为decoder的隐藏层参数
     decoder_hidden = encoder_hidden
-
-    # Teacher Forcing: 使用目标语句直接作为下一次decoder的输入
-    use_teacher_forcing = True if random.random() > config.teacher_forcing_threshold else False
 
     if use_teacher_forcing:
 
@@ -121,8 +140,9 @@ def train_iters(encoder, decoder, input_lang, target_lang, pairs, n_iters, print
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
 
+        use_teacher_forcing = check_if_use_teacher_forcing(i, n_iters)
         loss = do_train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer,
-                        criterion)
+                        criterion, use_teacher_forcing=use_teacher_forcing)
 
         print_loss_total += loss
         plot_loss_total += loss
