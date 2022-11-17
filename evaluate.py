@@ -112,7 +112,7 @@ def evaluate(sentence: str):
         return result
     except Exception as e:
         print("Err occurred, raw_str={}, msg={}".format(raw_str, e))
-        return "Error occurred when translating."
+        raise e
 
 
 if __name__ == '__main__':

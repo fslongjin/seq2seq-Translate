@@ -165,3 +165,8 @@ def train():
 
     train_iters(encoder, attn_decoder, input_lang, target_lang, pairs, config.iters, config.print_every,
                 config.plot_every, config.learning_rate)
+
+
+if __name__ == '__main__':
+    print("启动训练...")
+    train()
