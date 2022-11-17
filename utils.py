@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 from config import WordIndex, SEQ_MAX_LENGTH
-
+import torch
+import config
 plt.switch_backend('agg')
 
 
@@ -145,3 +146,64 @@ def show_plot(points):
     loc = ticker.MultipleLocator(base=0.2)
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
+    plt.savefig("train_result.png")
+
+
+def indexes_from_sentence(lang, sentence):
+    """
+    为输入的句子，获取每个word的index
+    :param lang: 语言对象
+    :param sentence: 句子
+    :return:
+    """
+    return [lang.word2index[word] for word in sentence.split(' ')]
+
+
+def tensor_from_sentence(lang, sentence):
+    """
+    输入一个句子，为它创建一个tensor
+    :param lang: 语言对象
+    :param sentence: 句子
+    :return:
+    """
+    indexes = indexes_from_sentence(lang, sentence)
+    # 为每个句子末尾加上EOS token
+    indexes.append(int(config.WordIndex.EOS_token))
+    return torch.tensor(indexes, dtype=torch.long, device=config.device).view(-1, 1)
+
+
+def tensors_from_pair(input_lang, target_lang, pair):
+    """
+    给定一个（源语言句子，目标语言句子）的二元组，为句子创建tensor
+    :param input_lang: 源语言对象
+    :param target_lang: 目标语言对象
+    :param pair: 结构为（源语言句子，目标语言句子）的二元组
+    :return:
+    """
+    input_tensor = tensor_from_sentence(input_lang, pair[0])
+    target_tensor = tensor_from_sentence(target_lang, pair[1])
+    return input_tensor, target_tensor
+
+
+def prepare_data(lang1, lang2, reverse=True):
+    """
+    数据预处理
+    :param lang1: 数据第一列的语言名称
+    :param lang2: 数据第二列的语言名称
+    :param reverse: 是否交换第一第二语言
+    :return:
+    """
+    input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
+
+    print("读取到 %s 个句对" % len(pairs))
+    pairs = filter_pairs(pairs)
+    print("经过过滤，最终剩下 %s 个句对" % len(pairs))
+    print("正在对语句中的单词数目进行计算...")
+    for pair in pairs:
+        input_lang.add_sentence(pair[0])
+        output_lang.add_sentence(pair[1])
+    print("总的单词数量：")
+    print(input_lang.name, input_lang.n_words)
+    print(output_lang.name, output_lang.n_words)
+
+    return input_lang, output_lang, pairs

@@ -17,7 +17,7 @@ SEQ_MAX_LENGTH = 30
 hidden_size = 256
 
 # ===== 与训练相关的设置 =====
-# 启用teacher forcing加速训练的阈值. 当随机数小于大于这个值的时候将会启用。
+# 启用teacher forcing加速训练的阈值. 当随机数大于这个值的时候将会启用。
 teacher_forcing_threshold = 0.5
 # 训练时的dropout rate
 dropout_p = 0.1
