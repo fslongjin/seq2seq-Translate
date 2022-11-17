@@ -126,8 +126,8 @@ def train_iters(encoder, decoder, input_lang, target_lang, pairs, n_iters, print
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
 
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate, weight_decay=0.001)
+    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate, weight_decay=0.001)
 
     # 为每个迭代选择要用于训练的数据
     training_pairs = [tensors_from_pair(input_lang, target_lang, random.choice(pairs)) for i in range(n_iters)]

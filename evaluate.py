@@ -178,7 +178,12 @@ def evaluate_on_dataset():
             def worker(p):
                 try:
                     _decoded_words, _attentions = do_evaluate(encoder, decoder, input_lang, target_lang, p[0])
-                    q.put(sentence_bleu([p[1]], _decoded_words))
+                    # 拼接成完整的句子
+                    _result = ''
+                    for x in _decoded_words:
+                        _result += x + ' '
+
+                    q.put(sentence_bleu([p[1]], _result))
                 except Exception as e:
                     print("在评估{}时发生错误".format(p))
 
@@ -197,7 +202,10 @@ def evaluate_on_dataset():
                 try:
                     decoded_words, attentions = do_evaluate(encoder, decoder, input_lang, target_lang, pair[0])
                     # print("sentence_bleu([pair[1]], decoded_words)={}".format(sentence_bleu([pair[1]], decoded_words)))
-                    total_bleu_score += sentence_bleu([pair[1]], decoded_words)
+                    result = ''
+                    for x in decoded_words:
+                        result += x + ' '
+                    total_bleu_score += sentence_bleu([pair[1]], result)
                 except Exception as e:
                     print("在评估{}时发生错误".format(pair))
 
@@ -207,6 +215,10 @@ def evaluate_on_dataset():
 
 
 if __name__ == '__main__':
-    data = ['我们非常需要食物', '他总是忘记事情']
-    # evaluate_and_show_attention(data)
+    data = ['我们非常需要食物',
+            '他总是忘记事情',
+            '他和他的邻居相处',
+            '我肯定他会成功的',
+            '她可以教英语',]
+    evaluate_and_show_attention(data)
     evaluate_on_dataset()
