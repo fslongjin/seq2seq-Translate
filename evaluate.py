@@ -108,7 +108,7 @@ def evaluate(sentence: str):
         for x in decoded_words:
             result += x + ' '
 
-        print("sentence={}, result={}".format(raw_str, result))
+        print("翻译完成, sentence={}, result={}".format(raw_str, result))
         return result
     except Exception as e:
         print("Err occurred, raw_str={}, msg={}".format(raw_str, e))
@@ -116,4 +116,4 @@ def evaluate(sentence: str):
 
 
 if __name__ == '__main__':
-    evaluate("崩溃了。")
+    evaluate("我不想上学。")
