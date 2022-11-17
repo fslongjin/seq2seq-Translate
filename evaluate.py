@@ -1,4 +1,6 @@
 import torch
+from matplotlib import pyplot as plt, ticker
+
 import config
 import os
 from model import EncoderRNN, AttnDecoderRNN
@@ -49,10 +51,11 @@ def get_model():
         raise FileNotFoundError
 
     # 加载模型参数
-    print("正在加载encoder参数...")
+    print("正在从文件：{} 加载encoder参数...".format(encoder_path))
     __encoder = torch.load(encoder_path, map_location=torch.device(config.device))
-    print("正在加载decoder参数...")
+    print("正在从文件：{} 加载decoder参数...".format(decoder_path))
     __decoder = torch.load(decoder_path, map_location=torch.device(config.device))
+    print("模型加载成功！")
     get_model_lock.release()
 
     return __encoder, __decoder, __input_lang, __target_lang, __pairs
@@ -115,5 +118,48 @@ def evaluate(sentence: str):
         raise e
 
 
+def show_attention(save_path, input_sentence, output_words, attentions):
+    """
+    绘制模型的注意力图表
+    :param save_path: 图片保存的目标位置
+    :param input_sentence: 输入的句子（经过正则化的）
+    :param output_words: 输出的结果
+    :param attentions: 注意力tensor
+    :return: None
+    """
+
+    # Set up figure with colorbar
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(attentions.numpy(), cmap='bone')
+    fig.colorbar(cax)
+
+    # Set up axes
+    ax.set_xticklabels([''] + input_sentence.split(' ') +
+                       ['<EOS>'], rotation=90)
+    ax.set_yticklabels([''] + output_words)
+
+    # Show label at every tick
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    plt.savefig(save_path)
+
+
+def evaluate_and_show_attention(sentences: list):
+    for sentence in sentences:
+        raw_str = sentence
+        try:
+            sentence = normalize_string(sentence)
+            encoder, decoder, input_lang, target_lang, pairs = get_model()
+            decoded_words, attentions = do_evaluate(encoder, decoder, input_lang, target_lang, sentence)
+
+            show_attention(os.path.join(config.result_path, raw_str)+".png", sentence, decoded_words, attentions)
+
+        except Exception as e:
+            print("Err occurred, raw_str={}, msg={}".format(raw_str, e))
+
+
 if __name__ == '__main__':
-    evaluate("我不想上学。")
+    data = ['我们非常需要事物', '他总是忘记事情']
+    evaluate_and_show_attention(data)

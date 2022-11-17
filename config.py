@@ -29,12 +29,15 @@ iters = 75000
 # 训练多少轮，打印一次日志
 print_every = 1000
 # 训练多少轮，绘制一次图像
-plot_every = 1000
-learning_rate = 0.01
+plot_every = 100
+learning_rate = 0.001
 
 # 模型保存的路径
 model_save_path = 'models/'
+# checkpoints的保存路径
 checkpoint_save_path = "checkpoints/"
+# 输出的图表的保存路径
+result_path = 'output_results/'
 
 # 训练多少轮保存一次checkpoint
 checkpoint_steps = 1000
