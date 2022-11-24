@@ -1,4 +1,4 @@
-torch~=1.13.0+cpu
+# torch~=1.13.0+cpu
 fastapi~=0.85.0
 uvicorn~=0.18.3
 matplotlib~=3.6.0

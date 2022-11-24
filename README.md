@@ -72,3 +72,25 @@ http://0.0.0.0:10086/seq2seq/崩溃了
 ```text
 {"status":-1,"result":"Error occurred when translating."}
 ```
+
+## Docker部署
+
+您可以通过以下方式快速地构建docker镜像：
+
+```shell
+docker build -t seq2seq:v0.1 .
+```
+
+通过以下命令启动容器：
+
+```shell
+docker-compose up -d .
+```
+
+然后服务端将会运行在本机的地址：`172.110.2.2:10086`上. 若您需要将容器映射到主机的端口，请自行修改`docker-compose.yml`文件。
+
+## 赞赏
+
+如果这个项目帮助到你，不妨微信扫码请我喝杯咖啡吧！
+
+![image](wx-reward.png)

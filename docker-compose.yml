@@ -1,0 +1,18 @@
+version: "3"
+
+# More info at https://github.com/oracle/opengrok/docker/
+services:
+   seq2seq:
+       container_name: seq2seq-translate
+       image: seq2seq:v0.1
+       restart: always
+
+       networks:
+         network-seq2seq-translate:
+           ipv4_address: 172.110.2.2
+
+networks:
+  network-seq2seq-translate:
+    ipam:
+      config:
+        - subnet: 172.110.2.0/24
